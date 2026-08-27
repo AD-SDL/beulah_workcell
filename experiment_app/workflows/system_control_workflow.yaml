@@ -1,0 +1,28 @@
+name: Mix Colors Workflow
+
+metadata:
+  author: Tobias Ginsburg, Rafael Vescovi
+  info: New Plate workflow for the RPL Color Picker
+  version: 0.2
+
+parameters:
+  json_inputs:
+    - key: target_flowrate
+    - key: target_temperature
+
+steps:
+  - name: Set Flowrate
+    action: set_setpoint_and_settle
+    node: sierra_mfc
+    
+    use_parameters:
+      args:
+        setpoint: target_flowrate
+  - name: Set Temperature
+    action: set_temperature
+    node: nanodac
+    
+    use_parameters:
+      args:
+        setpoint: target_temperature
+

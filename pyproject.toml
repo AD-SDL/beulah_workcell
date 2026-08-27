@@ -1,0 +1,25 @@
+[project]
+name = "flowrater_experiment"
+version = "0.4.0"
+description = "Flowrate Experiment"
+authors = [
+    {name = "Doga Ozgulbas", email = "dozgulbas@anl.gov"},
+    {name = "Tobias Ginsburg", email = "tginsburg@anl.gov"},
+]
+dependencies = [
+    "madsci.common~=0.8",
+    "madsci.client~=0.8",
+    "madsci.experiment_application~=0.8",
+]
+requires-python = ">=3.11"
+readme = "README.md"
+license = {text = "MIT"}
+
+[tool.pdm]
+distribution = true
+
+[dependency-groups]
+dev = [
+    "ruff>=0.15.4",
+    "pre-commit>=4.5.1",
+]
