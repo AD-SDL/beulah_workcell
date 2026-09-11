@@ -33,7 +33,7 @@ def read_data():
     return [0, 0]
 class FlowrateConfig(ExperimentApplicationConfig):
     workflow_directory: PathLike = (Path(__file__).parent / "workflows").resolve()
-    runtime_hours: int = 8
+    runtime_hours: int = 12
     data_directory: str = "/net/s9data/export/9bm/BMData/Sterbinsky/2026/Sept2026"
 class FlowrateExperiment(ExperimentApplication):
     def anchor(self, first_scan_path):
@@ -63,15 +63,14 @@ class FlowrateExperiment(ExperimentApplication):
         mu_max = float(np.max(scan.mu))
         anchor_max = getattr(self, "_anchor_mu_max", None)
         if mu_max <= 0 or (anchor_max and mu_max < 0.2 * anchor_max):
-            raise ValueError(f"{Path(scan_path).name}: signal lost (beam or detector)")
+            return None
         if not self.selfabs_C > mu_max:
-            return None, f"{Path(scan_path).name}: saturated beyond the correction"
-
+            return None
         scan.mu = ga.apply_self_absorption(scan.mu, self.selfabs_C, 1.0)
         ga.xafs.pre_edge(scan, **PRE_EDGE)
         edge, _, bracketed = ga.dau_edge_energy(scan, MU1, MU2)
         oxidation_state = self.slope * edge + self.intercept
-        return self.anchor_valence - oxidation_state
+        return oxidation_state
     def control_desicion(self, scan_path, current_state):
         """Decide whether to continue heating or start cooling.
 
@@ -114,6 +113,7 @@ class FlowrateExperiment(ExperimentApplication):
         self.anchor_valence = 3.0
         self.flowrate_path = self.config.workflow_directory / "set_flowrate.yaml"
         self.temp_path = self.config.workflow_directory / "set_temp.yaml"
+        self.ramp_down_temp_path = self.config.workflow_directory / "ramp_down_temp.yaml"
                
     def loop(self, path, latest_controls) -> None:
 
@@ -150,9 +150,9 @@ class FlowrateExperiment(ExperimentApplication):
                                 "target_flowrate_4": latest_controls[3],
                             },
                         )
-        # self.workcell_client.start_workflow(
-        #             workflow_definition=self.temp_path,
-        #         )
+        self.workcell_client.start_workflow(
+                    workflow_definition=self.temp_path
+                )
         start_time = datetime.now()
         num_reads = len(os.listdir(self.config.data_directory))
         self._calibrate("standards")
@@ -168,8 +168,10 @@ class FlowrateExperiment(ExperimentApplication):
         except Exception as e:
             self.logger.error(f"Experiment stopped: {e}")
             console.print(traceback.format_exc())
-
         finally:
+            self.workcell_client.start_workflow(
+                               workflow_definition=self.ramp_down_temp_path
+                           )
             console.print("\nDone")
 
 if __name__ == "__main__":

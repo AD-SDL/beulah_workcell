@@ -1,0 +1,16 @@
+name: ramp down Temperature
+
+metadata:
+  author: Tobias Ginsburg, Doga Ozgulbas
+  info: Sets temperature for beamline experiment
+  version: 0.2
+
+
+steps:
+  - name: Set Temperature
+    action: set_temperature
+    node: nanodac
+    args: 
+      setpoint: 20
+      ramp_rate: 9.7
+ 
