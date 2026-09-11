@@ -27,7 +27,7 @@ def read_data():
 class FlowrateConfig(ExperimentApplicationConfig):
     workflow_directory: PathLike = (Path(__file__).parent / "workflows").resolve()
     flowrate_hours: int = 8
-    data_directory: str = "/net/s9data/export/9bm/BMData/Sterbinsky/2026/September2026"
+    data_directory: str = "/net/s9data/export/9bm/BMData/Sterbinsky/2026/Sept2026"
 class FlowrateExperiment(ExperimentApplication):
     def anchor(self, first_scan_path):
         """Fit the self-absorption constant on the unreacted precursor.
