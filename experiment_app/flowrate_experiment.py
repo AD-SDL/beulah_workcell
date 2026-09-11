@@ -50,13 +50,9 @@ class FlowrateExperiment(ExperimentApplication):
                 [(s.energy, s.mu, self.anchor_valence) for s in scans],
                 self.slope, self.intercept, MU1, MU2, **PRE_EDGE)
             self.selfabs_C = float(fit["C"])
-            self._say(f"anchored on {path.name}: C = {self.selfabs_C:.5f}")
             return self.selfabs_C
         except Exception as error:
             self.reason = f"anchoring failed: {error}"
-            self._say(f"ANCHORING FAILED: {error}")
-            self._say("update() will keep returning a safe cooling ramp until "
-                      "anchor() succeeds.")
             return None
     def _read_scan_oxidation_state(self, scan_path):
         """Scan file -> alpha, or (None, why not). George's procedure, unchanged."""
