@@ -57,7 +57,7 @@ class FlowrateExperiment(ExperimentApplication):
             return None
     def _read_scan_oxidation_state(self, scan_path):
         """Scan file -> alpha, or (None, why not). George's procedure, unchanged."""
-        scan = ga.load_xanes(str(scan_path))
+        scan, _ = ga.load_xanes(str(scan_path))
         scan.energy = scan.mono_energy
         scan.mu = scan.xmap8_mnka_sum / scan.xmap8_dt_corr_i0
         mu_max = float(np.max(scan.mu))
