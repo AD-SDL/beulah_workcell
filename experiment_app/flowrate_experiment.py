@@ -57,15 +57,31 @@ class FlowrateExperiment(ExperimentApplication):
             return None
     def _read_scan_oxidation_state(self, scan_path):
         """Scan file -> alpha, or (None, why not). George's procedure, unchanged."""
-        scan, _ = ga.load_xanes(str(scan_path))
-        scan.energy = scan.mono_energy
-        scan.mu = scan.xmap8_mnka_sum / scan.xmap8_dt_corr_i0
+        x = "mono_energy"
+        y = "xmap8_mnka_sum"
+        mon = "xmap8_dt_corr_i0"
+        path = Path(scan_path)
+        scan = ga.read_ascii(str(path))
+        
+        if isinstance(x, str) and hasattr(scan, x):
+            scan.energy = getattr(scan, x)
+        if not hasattr(scan, 'energy'):
+            raise ValueError(f"{path.name}: no energy column {x!r}; has {scan.array_labels}")
+
+        monitor = getattr(scan, mon, None) if isinstance(mon, str) else mon
+        if isinstance(y, str) and hasattr(scan, y):
+            signal = getattr(scan, y)
+        elif len(scan.array_labels) == 2:   # (energy, mu) export: no monitor to divide by
+            signal, monitor = getattr(scan, scan.array_labels[1]), None
+        else:
+            raise ValueError(f"{path.name}: no column {y!r}; has {scan.array_labels}")
+        scan.mu = signal if monitor is None else signal / monitor
         mu_max = float(np.max(scan.mu))
         anchor_max = getattr(self, "_anchor_mu_max", None)
         if mu_max <= 0 or (anchor_max and mu_max < 0.2 * anchor_max):
             raise ValueError(f"{Path(scan_path).name}: signal lost (beam or detector)")
         if not self.selfabs_C > mu_max:
-            raise ValueError(f"{Path(scan_path).name}: saturated beyond the correction")
+            return None, f"{Path(scan_path).name}: saturated beyond the correction"
 
         scan.mu = ga.apply_self_absorption(scan.mu, self.selfabs_C, 1.0)
         ga.xafs.pre_edge(scan, **PRE_EDGE)
