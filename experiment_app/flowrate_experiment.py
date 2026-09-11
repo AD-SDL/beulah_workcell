@@ -21,6 +21,12 @@ MU1, MU2 = 0.2, 1.0
 PRE_EDGE = dict(npre=1, pre1=-145, pre2=-50, nnorm=2,
                 norm1=75.0, norm2=721.58, nvict=0)
 
+STANDARDS = {
+    "MnO2std":  {"scan": 1, "oxidation_state": 4},
+    "MnO_std":  {"scan": 2, "oxidation_state": 2},
+    "Mn2O3std": {"scan": 3, "oxidation_state": 3},
+}
+
 console = Console()
 def read_data():
     return [0, 0]
@@ -96,6 +102,18 @@ class FlowrateExperiment(ExperimentApplication):
             return oxidizing_control
         else: 
             return neutral_control
+    def _calibrate(self, standards_dir):
+        """The edge-energy to oxidation-state line, from the three standards."""
+        edges, states = [], []
+        for prefix, info in STANDARDS.items():
+            _, merged = ga.load_xanes(standards_dir, prefix,
+                                      start=info["scan"], stop=info["scan"])
+            ga.xafs.pre_edge(merged, **PRE_EDGE)
+            edge, _, _ = ga.dau_edge_energy(merged, MU1, MU2)
+            edges.append(edge)
+            states.append(info["oxidation_state"])
+        self.slope, self.intercept, r = ga.linear_calibration(edges, states)  
+    
     config = FlowrateConfig()
 
     def __init__(self, config: Optional[FlowrateConfig] = None):
@@ -144,6 +162,7 @@ class FlowrateExperiment(ExperimentApplication):
         #         )
         start_time = time.time()
         num_reads = len(os.listdir(self.config.data_directory))
+        self._calibrate("standards")
         self.anchor(self.config.data_directory + "/LiO4_MnOOH_15C_He.0001")
         try:
             while time.time() - start_time < time.hours(self.config.runtime_hours): 
