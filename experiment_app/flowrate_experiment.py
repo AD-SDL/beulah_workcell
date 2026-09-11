@@ -144,14 +144,14 @@ class FlowrateExperiment(ExperimentApplication):
         
     def run_experiment(self) -> None:
         console.print("Starting experiment...")
-        latest_control = [0, 0, 60, 0]
+        latest_controls = [0, 0, 60, 0]
         self.workcell_client.start_workflow(
                             workflow_definition=self.flowrate_path,
                             json_inputs={
-                                "target_flowrate_1": latest_control[0],
-                                "target_flowrate_2": latest_control[1],
-                                "target_flowrate_3": latest_control[2],
-                                "target_flowrate_4": latest_control[3],
+                                "target_flowrate_1": latest_controls[0],
+                                "target_flowrate_2": latest_controls[1],
+                                "target_flowrate_3": latest_controls[2],
+                                "target_flowrate_4": latest_controls[3],
                             },
                         )
         # self.workcell_client.start_workflow(
