@@ -101,7 +101,7 @@ class FlowrateExperiment(ExperimentApplication):
     def __init__(self, config: Optional[FlowrateConfig] = None):
         if config:
             self.config = config
-        self.workcell_client.workcell_server_url = "http://localhost:8005"
+        self.workcell_client = WorkcellClient("http://localhost:8005")
         super().__init__()
 
         self.flowrate_path = self.config.workflow_directory / "set_flowrate.yaml"
