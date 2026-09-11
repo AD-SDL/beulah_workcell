@@ -1,9 +1,10 @@
 import os
 import json
-import time
+from datetime import datetime, timedelta
 import traceback
 from pathlib import Path
 from typing import Optional
+import time
 
 from madsci.client import WorkcellClient, DataClient
 from madsci.common.types.base_types import PathLike
@@ -156,12 +157,12 @@ class FlowrateExperiment(ExperimentApplication):
         # self.workcell_client.start_workflow(
         #             workflow_definition=self.temp_path,
         #         )
-        start_time = time.time()
+        start_time = datetime.now()
         num_reads = len(os.listdir(self.config.data_directory))
         self._calibrate("standards")
         self.anchor(self.config.data_directory + "/LiO4_MnOOH_15C_He.0001")
         try:
-            while time.time() - start_time < time.hours(self.config.runtime_hours): 
+            while datetime.now() - start_time < timedelta(hours=self.config.runtime_hours): 
                 while len(os.listdir(self.config.data_directory)) == num_reads:
                     time.sleep(1)
                 num_reads = len(os.listdir(self.config.data_directory))
