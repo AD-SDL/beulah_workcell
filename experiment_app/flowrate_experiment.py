@@ -57,25 +57,9 @@ class FlowrateExperiment(ExperimentApplication):
             return None
     def _read_scan_oxidation_state(self, scan_path):
         """Scan file -> alpha, or (None, why not). George's procedure, unchanged."""
-        x = "mono_energy"
-        y = "xmap8_mnka_sum"
-        mon = "xmap8_dt_corr_i0"
-        path = Path(scan_path)
-        scan = ga.read_ascii(str(path))
-        
-        if isinstance(x, str) and hasattr(scan, x):
-            scan.energy = getattr(scan, x)
-        if not hasattr(scan, 'energy'):
-            raise ValueError(f"{path.name}: no energy column {x!r}; has {scan.array_labels}")
-
-        monitor = getattr(scan, mon, None) if isinstance(mon, str) else mon
-        if isinstance(y, str) and hasattr(scan, y):
-            signal = getattr(scan, y)
-        elif len(scan.array_labels) == 2:   # (energy, mu) export: no monitor to divide by
-            signal, monitor = getattr(scan, scan.array_labels[1]), None
-        else:
-            raise ValueError(f"{path.name}: no column {y!r}; has {scan.array_labels}")
-        scan.mu = signal if monitor is None else signal / monitor
+        scan = ga.read_ascii(str(scan_path))
+        scan.energy = scan.mono_energy
+        scan.mu = scan.xmap8_mnka_sum / scan.xmap8_dt_corr_i0
         mu_max = float(np.max(scan.mu))
         anchor_max = getattr(self, "_anchor_mu_max", None)
         if mu_max <= 0 or (anchor_max and mu_max < 0.2 * anchor_max):
@@ -145,9 +129,12 @@ class FlowrateExperiment(ExperimentApplication):
             },
         )
         return control_desicion
-    def find_latest_file(self, directory):
-        list_of_files = glob.glob(os.path.join(directory, '*')) # Get all files in the directory
-        latest_file = max(list_of_files, key=os.path.getctime) # Find the latest file based on creation time
+    def find_latest_file(self, directory, prefix="LiO4_MnOOH_3pt5H2inHe"):
+        list_of_files = glob.glob(os.path.join(directory, f"{prefix}*")) # Get all files in the directory
+        names = [Path(f).name for f in list_of_files]
+        numbers = [int(name.split(".")[-1]) for name in names]
+        max_number = max(numbers)
+        latest_file = list_of_files[numbers.index(max_number)]
         return latest_file
 
         
