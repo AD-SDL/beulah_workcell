@@ -103,7 +103,7 @@ class FlowrateExperiment(ExperimentApplication):
             self.config = config
         self.workcell_client = WorkcellClient("http://localhost:8005")
         super().__init__()
-
+        self.anchor_valence = 3.0
         self.flowrate_path = self.config.workflow_directory / "set_flowrate.yaml"
         self.temp_path = self.config.workflow_directory / "set_temp.yaml"
                
