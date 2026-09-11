@@ -33,7 +33,7 @@ def read_data():
     return [0, 0]
 class FlowrateConfig(ExperimentApplicationConfig):
     workflow_directory: PathLike = (Path(__file__).parent / "workflows").resolve()
-    flowrate_hours: int = 8
+    runtime_hours: int = 8
     data_directory: str = "/net/s9data/export/9bm/BMData/Sterbinsky/2026/Sept2026"
 class FlowrateExperiment(ExperimentApplication):
     def anchor(self, first_scan_path):
