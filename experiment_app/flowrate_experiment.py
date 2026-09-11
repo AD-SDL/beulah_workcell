@@ -132,7 +132,7 @@ class FlowrateExperiment(ExperimentApplication):
     def find_latest_file(self, directory, prefix="LiO4_MnOOH_3pt5H2inHe"):
         list_of_files = glob.glob(os.path.join(directory, f"{prefix}*")) # Get all files in the directory
         names = [Path(f).name for f in list_of_files]
-        numbers = [int(name.split(".")[-1]) for name in names]
+        numbers = [ -1 if "last" in name else int(name.split(".")[-1]) for name in names]
         max_number = max(numbers)
         latest_file = list_of_files[numbers.index(max_number)]
         return latest_file
