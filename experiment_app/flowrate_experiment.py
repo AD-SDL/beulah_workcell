@@ -20,30 +20,7 @@ import glob
 MU1, MU2 = 0.2, 1.0
 PRE_EDGE = dict(npre=1, pre1=-145, pre2=-50, nnorm=2,
                 norm1=75.0, norm2=721.58, nvict=0)
-def _read_scan_oxidation_state(self, scan_path):
-        """Scan file -> alpha, or (None, why not). George's procedure, unchanged."""
-        try:
-            scan = ga.read_ascii(str(scan_path))
-            scan.energy = scan.mono_energy
-            scan.mu = scan.xmap8_mnka_sum / scan.xmap8_dt_corr_i0
-        except Exception as error:
-            return None, f"could not read {Path(scan_path).name}: {error}"
 
-        mu_max = float(np.max(scan.mu))
-        anchor_max = getattr(self, "_anchor_mu_max", None)
-        if mu_max <= 0 or (anchor_max and mu_max < 0.2 * anchor_max):
-            return None, f"{Path(scan_path).name}: signal lost (beam or detector)"
-        if not self.selfabs_C > mu_max:
-            return None, f"{Path(scan_path).name}: saturated beyond the correction"
-
-        try:
-            scan.mu = ga.apply_self_absorption(scan.mu, self.selfabs_C, 1.0)
-            ga.xafs.pre_edge(scan, **PRE_EDGE)
-            edge, _, bracketed = ga.dau_edge_energy(scan, MU1, MU2)
-        except Exception as error:
-            return None, f"{Path(scan_path).name}: analysis failed ({error})"
-
-        return self.intercept + self.slope * edge
 console = Console()
 def read_data():
     return [0, 0]
@@ -124,6 +101,7 @@ class FlowrateExperiment(ExperimentApplication):
     def __init__(self, config: Optional[FlowrateConfig] = None):
         if config:
             self.config = config
+        self.workcell_client.workcell_server_url = "http://localhost:8005"
         super().__init__()
 
         self.flowrate_path = self.config.workflow_directory / "set_flowrate.yaml"
