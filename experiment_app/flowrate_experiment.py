@@ -71,14 +71,11 @@ class FlowrateExperiment(ExperimentApplication):
         if not self.selfabs_C > mu_max:
             return None, f"{Path(scan_path).name}: saturated beyond the correction"
 
-        try:
-            scan.mu = ga.apply_self_absorption(scan.mu, self.selfabs_C, 1.0)
-            ga.xafs.pre_edge(scan, **PRE_EDGE)
-            edge, _, bracketed = ga.dau_edge_energy(scan, MU1, MU2)
-        except Exception as error:
-            return None, f"{Path(scan_path).name}: analysis failed ({error})"
-
-        return self.intercept + self.slope * edge
+        scan.mu = ga.apply_self_absorption(scan.mu, self.selfabs_C, 1.0)
+        ga.xafs.pre_edge(scan, **PRE_EDGE)
+        edge, _, bracketed = ga.dau_edge_energy(scan, MU1, MU2)
+        oxidation_state = self.slope * edge + self.intercept
+        return self.anchor_valence - oxidation_state
     def control_desicion(self, scan_path, current_state):
         """Decide whether to continue heating or start cooling.
 
