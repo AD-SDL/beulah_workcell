@@ -9,6 +9,8 @@ parameters:
   json_inputs:
     - key: target_flowrate_1
     - key: target_flowrate_2
+    - key: target_flowrate_3
+    - key: target_flowrate_4
 
 steps:
   - name: Set Flowrate 1
@@ -23,4 +25,15 @@ steps:
     use_parameters:
       args:
         setpoint: target_flowrate_2
-
+  - name: Set Flowrate 3
+    action: set_setpoint_and_settle
+    node: sierra_mfc_3
+    use_parameters:
+      args:
+        setpoint: target_flowrate_3
+  - name: Set Flowrate 4
+    action: set_setpoint_and_settle
+    node: sierra_mfc_4
+    use_parameters:
+      args:
+        setpoint: target_flowrate_4

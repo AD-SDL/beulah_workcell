@@ -49,7 +49,8 @@ def read_data():
     return [0, 0]
 class FlowrateConfig(ExperimentApplicationConfig):
     workflow_directory: PathLike = (Path(__file__).parent / "workflows").resolve()
-    iterations: int = Field(default=1, description="Number of iterations to run the experiment")
+    flowrate_hours = 8
+    data_directory = "/net/s9data/export/9bm/BMData/Sterbinsky/2026/September2026"
 class FlowrateExperiment(ExperimentApplication):
 
     def anchor(self, first_scan_path):
@@ -109,13 +110,16 @@ class FlowrateExperiment(ExperimentApplication):
         state = self._read_scan_oxidation_state(scan_path)
         if state is None:
             return current_state
-        oxidizing_threshold = 0.6
-        oxidizing_control = [40, 0, 0]
-        reducing_control = [0, 30, 10]
-        if state > oxidizing_threshold:
+        oxidizing_threshold = 2.5
+        oxidizing_control = [45, 0, 0, 15]
+        reducing_control = [0, 0, 60, 0]
+        neutral_control = [60, 0, 0, 0]
+        if state > oxidizing_threshold + 0.05:
             return reducing_control
-        else:
+        elif state < oxidizing_threshold - 0.05:
             return oxidizing_control
+        else: 
+            return neutral_control
     config = FlowrateConfig()
 
     def __init__(self, config: Optional[FlowrateConfig] = None):
@@ -126,18 +130,20 @@ class FlowrateExperiment(ExperimentApplication):
         self.flowrate_path = self.config.workflow_directory / "set_flowrate.yaml"
         self.temp_path = self.config.workflow_directory / "set_temp.yaml"
                
-    def loop(self, iteration: int, num_values: int) -> None:
-        
-        self.logger.info(f"--- Iteration {iteration + 1} ---")
-        data = read_data()
+    def loop(self, path, latest_controls) -> None:
+
+        control_desicion = self.control_desicion(path, latest_controls)
         # Starts Workflow on the physical hardware
         workflow = self.workcell_client.start_workflow(
             workflow_definition=self.flowrate_path,
             json_inputs={
-                "target_flowrate_1": data[0],
-                "target_flowrate_2": data[1]
+                "target_flowrate_1": control_desicion[0],
+                "target_flowrate_2": control_desicion[1],
+                "target_flowrate_3": control_desicion[2],
+                "target_flowrate_4": control_desicion[3],
             },
         )
+        return control_desicion
     def find_latest_file(self, directory):
         list_of_files = glob.glob(os.path.join(directory, '*')) # Get all files in the directory
         latest_file = max(list_of_files, key=os.path.getctime) # Find the latest file based on creation time
@@ -146,20 +152,30 @@ class FlowrateExperiment(ExperimentApplication):
         
     def run_experiment(self) -> None:
         console.print("Starting experiment...")
-        workflow = self.workcell_client.start_workflow(
+        latest_control = [0, 0, 60, 0]
+        self.workcell_client.start_workflow(
+                            workflow_definition=self.flowrate_path,
+                            json_inputs={
+                                "target_flowrate_1": latest_control[0],
+                                "target_flowrate_2": latest_control[1],
+                                "target_flowrate_3": latest_control[2],
+                                "target_flowrate_4": latest_control[3],
+                            },
+                        )
+        self.workcell_client.start_workflow(
                     workflow_definition=self.temp_path,
                 )
         start_time = time.time()
         num_reads = 0
+        
+        self.anchor(self.config.data_directory + "/LiO4_MnOOH_15C_He.0001")
         try:
-            while time.time() - start_time < time.hours(8): 
+            while time.time() - start_time < time.hours(self.config.runtime_hours): 
                 while len(os.listdir(self.config.data_directory)) == num_reads:
                     time.sleep(1)
                 num_reads = len(os.listdir(self.config.data_directory))
-                if num_reads == 1:
-                    self.anchor(self.find_latest_file(self.config.data_directory))
                 path = self.find_latest_file(self.config.data_directory)
-                self.loop(path)
+                latest_controls = self.loop(path, latest_controls)
                 
         except Exception as e:
             self.logger.error(f"Experiment stopped: {e}")
