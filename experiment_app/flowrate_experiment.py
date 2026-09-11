@@ -153,6 +153,7 @@ class FlowrateExperiment(ExperimentApplication):
         self.workcell_client.start_workflow(
                     workflow_definition=self.temp_path
                 )
+        time.sleep(60*60)
         start_time = datetime.now()
         num_reads = len(os.listdir(self.config.data_directory))
         self._calibrate("standards")
