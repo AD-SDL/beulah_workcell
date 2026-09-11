@@ -52,7 +52,6 @@ class FlowrateConfig(ExperimentApplicationConfig):
     flowrate_hours: int = 8
     data_directory: str = "/net/s9data/export/9bm/BMData/Sterbinsky/2026/September2026"
 class FlowrateExperiment(ExperimentApplication):
-
     def anchor(self, first_scan_path):
         """Fit the self-absorption constant on the unreacted precursor.
 
