@@ -57,19 +57,15 @@ class FlowrateExperiment(ExperimentApplication):
             return None
     def _read_scan_oxidation_state(self, scan_path):
         """Scan file -> alpha, or (None, why not). George's procedure, unchanged."""
-        try:
-            scan = ga.read_ascii(str(scan_path))
-            scan.energy = scan.mono_energy
-            scan.mu = scan.xmap8_mnka_sum / scan.xmap8_dt_corr_i0
-        except Exception as error:
-            return None, f"could not read {Path(scan_path).name}: {error}"
-
+        scan = ga.read_ascii(str(scan_path))
+        scan.energy = scan.mono_energy
+        scan.mu = scan.xmap8_mnka_sum / scan.xmap8_dt_corr_i0
         mu_max = float(np.max(scan.mu))
         anchor_max = getattr(self, "_anchor_mu_max", None)
         if mu_max <= 0 or (anchor_max and mu_max < 0.2 * anchor_max):
-            return None, f"{Path(scan_path).name}: signal lost (beam or detector)"
+            raise ValueError(f"{Path(scan_path).name}: signal lost (beam or detector)")
         if not self.selfabs_C > mu_max:
-            return None, f"{Path(scan_path).name}: saturated beyond the correction"
+            raise ValueError(f"{Path(scan_path).name}: saturated beyond the correction")
 
         scan.mu = ga.apply_self_absorption(scan.mu, self.selfabs_C, 1.0)
         ga.xafs.pre_edge(scan, **PRE_EDGE)
