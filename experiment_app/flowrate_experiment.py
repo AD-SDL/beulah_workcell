@@ -162,12 +162,11 @@ class FlowrateExperiment(ExperimentApplication):
                                 "target_flowrate_4": latest_control[3],
                             },
                         )
-        self.workcell_client.start_workflow(
-                    workflow_definition=self.temp_path,
-                )
+        # self.workcell_client.start_workflow(
+        #             workflow_definition=self.temp_path,
+        #         )
         start_time = time.time()
-        num_reads = 0
-        
+        num_reads = len(os.listdir(self.config.data_directory))
         self.anchor(self.config.data_directory + "/LiO4_MnOOH_15C_He.0001")
         try:
             while time.time() - start_time < time.hours(self.config.runtime_hours): 
