@@ -11,11 +11,11 @@ steps:
     action: set_temperature
     node: nanodac
     args:
-      setpoint: 20
+      temperature: 20
   - name: Set Temperature
     action: set_temperature
     node: nanodac
     args: 
-      setpoint: 600
+      temperature: 600
       ramp_rate: 9.7
  
