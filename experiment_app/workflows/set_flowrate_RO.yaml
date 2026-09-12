@@ -5,12 +5,6 @@ metadata:
   info: Sets flowrates for beamline experiment
   version: 0.2
 
-parameters:
-  json_inputs:
-    - key: target_flowrate_1
-    - key: target_flowrate_2
-    - key: target_flowrate_3
-    - key: target_flowrate_4
 
 steps:
   - name: Set Flowrate 3
