@@ -28,6 +28,11 @@ STANDARDS = {
     "Mn2O3std": {"scan": 3, "oxidation_state": 3},
 }
 
+
+oxidizing_control = [45, 15, 0, 0]
+reducing_control = [0, 0, 60, 0]
+neutral_control = [60, 0, 0, 0]
+
 console = Console()
 def read_data():
     return [0, 0]
@@ -82,9 +87,7 @@ class FlowrateExperiment(ExperimentApplication):
         if state is None:
             return current_state
         oxidizing_threshold = 2.5
-        oxidizing_control = [45, 15, 0, 0]
-        reducing_control = [0, 0, 60, 0]
-        neutral_control = [60, 0, 0, 0]
+        
         if state > oxidizing_threshold + 0.05:
             return reducing_control
         elif state < oxidizing_threshold - 0.05:
@@ -112,24 +115,50 @@ class FlowrateExperiment(ExperimentApplication):
         super().__init__()
         self.anchor_valence = 3.0
         self.flowrate_path = self.config.workflow_directory / "set_flowrate.yaml"
+        self.flowrate_path_out_of_neutral = self.config.workflow_directory / "set_flowrate_out_of_neutral.yaml"
+        self.flowrate_path_RO = self.config.workflow_directory / "set_flowrate_RO.yaml"
+        self.flowrate_path_OR = self.config.workflow_directory / "set_flowrate_OR.yaml"
         self.temp_path = self.config.workflow_directory / "set_temp.yaml"
         self.ramp_down_temp_path = self.config.workflow_directory / "ramp_down_temp.yaml"
                
     def loop(self, path, latest_controls) -> None:
 
         control_desicion = self.control_desicion(path, latest_controls)
+        if control_desicion == oxidizing_control and latest_controls == reducing_control:
+            self.workcell_client.start_workflow(
+                            workflow_definition=self.flowrate_path_OR
+                        )
+
+        elif control_desicion == reducing_control and latest_controls == oxidizing_control:
+            self.workcell_client.start_workflow(
+                            workflow_definition=self.flowrate_path_RO
+                        )
+           
         # Starts Workflow on the physical hardware
-        workflow = self.workcell_client.start_workflow(
-            workflow_definition=self.flowrate_path,
-            json_inputs={
-                "target_flowrate_1": control_desicion[0],
-                "target_flowrate_2": control_desicion[1],
-                "target_flowrate_3": control_desicion[2],
-                "target_flowrate_4": control_desicion[3],
-            },
-        )
+        else:
+            if latest_controls == neutral_control:
+                self.workcell_client.start_workflow(
+                    workflow_definition=self.flowrate_path_out_of_neutral,
+                    json_inputs={
+                        "target_flowrate_1": control_desicion[0],
+                        "target_flowrate_2": control_desicion[1],
+                        "target_flowrate_3": control_desicion[2],
+                        "target_flowrate_4": control_desicion[3],
+                    },
+                )
+            else: 
+                self.workcell_client.start_workflow(
+                    workflow_definition=self.flowrate_path,
+                    json_inputs={
+                        "target_flowrate_1": control_desicion[0],
+                        "target_flowrate_2": control_desicion[1],
+                        "target_flowrate_3": control_desicion[2],
+                        "target_flowrate_4": control_desicion[3],
+                    },
+                )
+            
         return control_desicion
-    def find_latest_file(self, directory, prefix="LiO4_MnOOH_3pt5H2inHe"):
+    def find_latest_file(self, directory, prefix="run2_LiO4_MnOOH"):
         list_of_files = glob.glob(os.path.join(directory, f"{prefix}*")) # Get all files in the directory
         names = [Path(f).name for f in list_of_files]
         numbers = [ -1 if "last" in name else int(name.split(".")[-1]) for name in names]
@@ -157,7 +186,7 @@ class FlowrateExperiment(ExperimentApplication):
         start_time = datetime.now()
         num_reads = len(os.listdir(self.config.data_directory))
         self._calibrate("standards")
-        self.anchor(self.config.data_directory + "/LiO4_MnOOH_15C_He.0001")
+        self.anchor(self.config.data_directory + "/run2_LiO4_MnOOH_Helium_20C.0005")
         try:
             while datetime.now() - start_time < timedelta(hours=self.config.runtime_hours): 
                 while len(os.listdir(self.config.data_directory)) == num_reads:

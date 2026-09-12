@@ -1,0 +1,29 @@
+name: Set Flowrates OR
+
+metadata:
+  author: Tobias Ginsburg, Doga Ozgulbas
+  info: Sets flowrates for beamline experiment
+  version: 0.2
+
+
+steps:
+  - name: Set Flowrate 2
+    action: set_setpoint_and_settle
+    node: sierra_mfc_2
+    args:
+        setpoint: 0
+  - name: Set Flowrate 3
+    action: set_setpoint_and_settle
+    node: sierra_mfc_3
+    args:
+        setpoint: 15
+  - name: Set Flowrate 1
+    action: set_setpoint_and_settle
+    node: sierra_mfc_1
+    args:
+        setpoint: 0
+  - name: Set Flowrate 3
+    action: set_setpoint_and_settle
+    node: sierra_mfc_3
+    args:
+        setpoint: 60
