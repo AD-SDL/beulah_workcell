@@ -82,7 +82,7 @@ class FlowrateExperiment(ExperimentApplication):
         if state is None:
             return current_state
         oxidizing_threshold = 2.5
-        oxidizing_control = [45, 0, 0, 15]
+        oxidizing_control = [45, 15, 0, 0]
         reducing_control = [0, 0, 60, 0]
         neutral_control = [60, 0, 0, 0]
         if state > oxidizing_threshold + 0.05:
