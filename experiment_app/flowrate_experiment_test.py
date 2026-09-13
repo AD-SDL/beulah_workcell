@@ -194,7 +194,7 @@ class FlowrateExperiment(ExperimentApplication):
         self._calibrate("standards")
         self.anchor(self.config.data_directory + "/run2_LiO4_MnOOH_Helium_20C.0005")
         try:
-            while datetime.now() - start_time < timedelta(hours=self.config.runtime_hours): 
+            while datetime.now() - start_time < timedelta(minutes=30): 
                 # while len(os.listdir(self.config.data_directory)) == num_reads:
                 #     time.sleep(1)
                 # num_reads = len(os.listdir(self.config.data_directory))
