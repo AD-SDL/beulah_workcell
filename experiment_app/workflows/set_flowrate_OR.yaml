@@ -7,9 +7,9 @@ metadata:
 
 
 steps:
-  - name: Set Flowrate 2
+  - name: Set Flowrate 4
     action: set_setpoint_and_settle
-    node: sierra_mfc_2
+    node: sierra_mfc_4
     args:
         setpoint: 0
   - name: Set Flowrate 3
