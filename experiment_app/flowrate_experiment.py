@@ -38,7 +38,7 @@ def read_data():
     return [0, 0]
 class FlowrateConfig(ExperimentApplicationConfig):
     workflow_directory: PathLike = (Path(__file__).parent / "workflows").resolve()
-    runtime_hours: int = 12
+    runtime_hours: int = 10
     data_directory: str = "/net/s9data/export/9bm/BMData/Sterbinsky/2026/Sept2026"
 class FlowrateExperiment(ExperimentApplication):
     def anchor(self, first_scan_path):
@@ -158,7 +158,7 @@ class FlowrateExperiment(ExperimentApplication):
                 )
             
         return control_desicion
-    def find_latest_file(self, directory, prefix="run2_LiO4_MnOOH"):
+    def find_latest_file(self, directory, prefix="run3_LiO4_MnOOH"):
         list_of_files = glob.glob(os.path.join(directory, f"{prefix}*")) # Get all files in the directory
         names = [Path(f).name for f in list_of_files]
         numbers = [ -1 if "last" in name else int(name.split(".")[-1]) for name in names]
@@ -186,7 +186,7 @@ class FlowrateExperiment(ExperimentApplication):
         start_time = datetime.now()
         num_reads = len(os.listdir(self.config.data_directory))
         self._calibrate("standards")
-        self.anchor(self.config.data_directory + "/run2_LiO4_MnOOH_Helium_20C.0005")
+        self.anchor(self.config.data_directory + "/run3_LiO4_MnOOH_Helium_20C.0001")
         try:
             while datetime.now() - start_time < timedelta(hours=self.config.runtime_hours): 
                 while len(os.listdir(self.config.data_directory)) == num_reads:
