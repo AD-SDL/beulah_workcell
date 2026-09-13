@@ -29,7 +29,7 @@ STANDARDS = {
 }
 
 
-oxidizing_control = [45, 15, 0, 0]
+oxidizing_control = [45, 0, 0, 15]
 reducing_control = [0, 0, 60, 0]
 neutral_control = [60, 0, 0, 0]
 
