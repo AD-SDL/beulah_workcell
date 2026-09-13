@@ -206,9 +206,9 @@ class FlowrateExperiment(ExperimentApplication):
             self.logger.error(f"Experiment stopped: {e}")
             console.print(traceback.format_exc())
         finally:
-            # self.workcell_client.start_workflow(
-            #                    workflow_definition=self.ramp_down_temp_path
-            #                )
+            self.workcell_client.start_workflow(
+                               workflow_definition=self.ramp_down_temp_path
+                           )
             console.print("\nDone")
 
 if __name__ == "__main__":
