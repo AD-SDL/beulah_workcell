@@ -123,7 +123,13 @@ class FlowrateExperiment(ExperimentApplication):
                
     def loop(self, path, latest_controls) -> None:
 
-        control_desicion = self.control_desicion(path, latest_controls)
+        # control_desicion = self.control_desicion(path, latest_controls)
+        if latest_controls == neutral_control:
+            control_desicion = reducing_control
+        elif latest_controls == reducing_control:
+            control_desicion = neutral_control
+
+
         if control_desicion == oxidizing_control and latest_controls == reducing_control:
             self.workcell_client.start_workflow(
                             workflow_definition=self.flowrate_path_OR
